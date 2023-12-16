@@ -10,97 +10,141 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.FlowLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+
+import sn.swing.service.BusinessLayer;
+import sn.swing.service.IService;
+import sn.swing.utils.Utilitaire;
+
 import javax.swing.JPasswordField;
 import java.awt.Color;
 
 public class UILogin extends JFrame{
-	
 	private static final long serialVersionUID = 1L;
-	private JTextField textField;
+	private JTextField loginTF;
 	private JPasswordField passwordField;
+	private IService businessLayer;
 	
-	
-	public UILogin() {
+	private void initComponents () {
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setTitle("Sign in");
 		setResizable(false);
+		setPreferredSize(new Dimension(300, 150));
 		setSize(new Dimension(300, 150));
 		
-		JPanel panelSud = new JPanel();
-		panelSud.setBackground(new Color(0, 115, 165));
-		getContentPane().add(panelSud, BorderLayout.SOUTH);
+		JPanel panelSouth = new JPanel();
+		panelSouth.setBackground(new Color(0, 115, 165));
+		getContentPane().add(panelSouth, BorderLayout.SOUTH);
 		
-		JButton btnNewButton = new JButton("Submit");
-		panelSud.add(btnNewButton);
-		btnNewButton.addActionListener(new ActionListener() {
+		JButton submitButton = new JButton("Submit");
+		
+		submitButton.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Bonjour");
+				onSubmitClicked();
 				
 			}
 		});
+		panelSouth.add(submitButton);
 		
-		JButton btnNewButton_1 = new JButton("Cancel");
-		panelSud.add(btnNewButton_1);
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				onQuitterCliked();
+				
+			}
+		});
+		panelSouth.add(cancelButton);
 		
-		JPanel panelNord = new JPanel();
-		panelNord.setBackground(new Color(0, 115, 165));
-		panelNord.setPreferredSize(new Dimension(10, 15));
-		getContentPane().add(panelNord, BorderLayout.NORTH);
+		JPanel panelNorth = new JPanel();
+		panelNorth.setBackground(new Color(0, 115, 165));
+		panelNorth.setPreferredSize(new Dimension(10, 15));
+		getContentPane().add(panelNorth, BorderLayout.NORTH);
 		
 		JPanel panelEast = new JPanel();
-		panelEast.setSize(new Dimension(30, 10));
 		panelEast.setBackground(new Color(0, 115, 165));
 		panelEast.setPreferredSize(new Dimension(30, 10));
 		getContentPane().add(panelEast, BorderLayout.EAST);
-		panelEast.setLayout(new GridLayout(1, 0, 0, 0));
+		
 		
 		JPanel panelWest = new JPanel();
 		panelWest.setBackground(new Color(0, 115, 165));
 		getContentPane().add(panelWest, BorderLayout.WEST);
 		
-		JPanel panelCentre = new JPanel();
-		panelCentre.setBackground(new Color(0, 115, 165));
-		getContentPane().add(panelCentre, BorderLayout.CENTER);
-		panelCentre.setLayout(new GridLayout(2, 1, 0, 0));
+		JPanel panelCenter = new JPanel();
+		panelCenter.setBackground(new Color(0, 115, 165));
+		getContentPane().add(panelCenter, BorderLayout.CENTER);
+		panelCenter.setLayout(new GridLayout(2, 1, 0, 0));
 		
-		JPanel panel_1 = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) panel_1.getLayout();
-		flowLayout_1.setAlignment(FlowLayout.RIGHT);
-		panel_1.setBackground(new Color(0, 115, 165));
-		panelCentre.add(panel_1);
+		JPanel panelLogin = new JPanel();
+		panelLogin.setBackground(new Color(0, 115, 165));
+		FlowLayout flowLayoutLogin = (FlowLayout) panelLogin.getLayout();
+		flowLayoutLogin.setAlignment(FlowLayout.RIGHT);
+		panelCenter.add(panelLogin);
 		
-		JLabel lblNewLabel = new JLabel("Login");
-		lblNewLabel.setForeground(new Color(255, 255, 255));
-		panel_1.add(lblNewLabel);
+		JLabel loginLabel = new JLabel("Login");
+		loginLabel.setForeground(new Color(255, 255, 255));
+		panelLogin.add(loginLabel);
 		
-		textField = new JTextField();
-		panel_1.add(textField);
-		textField.setColumns(20);
+		loginTF = new JTextField();
+		panelLogin.add(loginTF);
+		loginTF.setColumns(20);
 		
-		JPanel panel = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) panel.getLayout();
-		flowLayout.setAlignment(FlowLayout.RIGHT);
-		panel.setBackground(new Color(0, 115, 165));
-		panelCentre.add(panel);
+		JPanel panelPassword = new JPanel();
+		FlowLayout flowLayoutPassword = (FlowLayout) panelPassword.getLayout();
+		flowLayoutPassword.setAlignment(FlowLayout.RIGHT);
+		panelPassword.setBackground(new Color(0, 115, 165));
+		panelCenter.add(panelPassword);
 		
-		JLabel lblNewLabel_1 = new JLabel("Password");
-		lblNewLabel_1.setForeground(new Color(255, 255, 255));
-		panel.add(lblNewLabel_1);
+		JLabel passwordLabel = new JLabel("Password");
+		passwordLabel.setForeground(new Color(255, 255, 255));
+		panelPassword.add(passwordLabel);
 		
 		passwordField = new JPasswordField();
 		passwordField.setColumns(20);
-		panel.add(passwordField);
+		panelPassword.add(passwordField);	
 		
-		
+		Utilitaire.setLookAndFeel(this);
+		Utilitaire.center(this, getSize());
 		
 	}
 	
-	public void star() {
-		this.setVisible(true);
+	public UILogin() {
+		businessLayer = new BusinessLayer();
+		initComponents();
+		
+	}
 
+	protected void onQuitterCliked() {
+		if (JOptionPane.showConfirmDialog(null,"Quitter l'application ?") == JOptionPane.YES_OPTION) {
+			dispose();
+		}
+		
 	}
-	
+
+	protected void onSubmitClicked() {
+		String login = this.loginTF.getText();
+		String password = String.valueOf(this.passwordField.getPassword());
+		
+		boolean status = businessLayer.authentificate(login, password);
+		
+		if (status == true) {
+			// Afficher la fenêtre des tâches
+			UIList uilist = new UIList();
+			uilist.start();
+			
+			dispose();
+		}else {
+			JOptionPane.showMessageDialog(null, "Echec d'authentification", "Authentification", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	public void start() {
+		this.setVisible(true);
+	}
 
 }

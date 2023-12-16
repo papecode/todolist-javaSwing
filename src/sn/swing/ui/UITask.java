@@ -7,8 +7,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JFormattedTextField;
@@ -16,12 +24,37 @@ import javax.swing.JComboBox;
 import java.awt.FlowLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.MaskFormatter;
+
+import sn.swing.entities.Criticite;
+import sn.swing.utils.Utilitaire;
+
 import javax.swing.border.EtchedBorder;
 
 public class UITask extends JFrame {
+	private static final long serialVersionUID = 1L;
+	private UIList uiList;
+	private JButton validerButton;
+	private JTextArea descriptionTA;
+	private JComboBox<String > criticiteCB;
+	private JFormattedTextField dateEcheanceTF;
+	
+	public UITask(UIList uiList) {
+			this();
+			
+			this.uiList = uiList;
+		}
+	
 	public UITask() {
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		iniComponents();
+	}
+	
+	private void iniComponents () {
 		setTitle("Gestion des tâches - version 1.0.2");
 		setResizable(false);
+		setPreferredSize(new Dimension(500, 250));
+		setSize(new Dimension(500, 250));
 		
 		JPanel panelNorth = new JPanel();
 		panelNorth.setBackground(new Color(0, 115, 165));
@@ -46,10 +79,27 @@ public class UITask extends JFrame {
 		panelSouth.setBackground(new Color(0, 115, 165));
 		getContentPane().add(panelSouth, BorderLayout.SOUTH);
 		
-		validerButton = new JButton("Valider");
+		JButton validerButton = new JButton("Valider");
+		validerButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onValiderClicked();
+				
+			}
+		}); 
+		
 		panelSouth.add(validerButton);
 		
 		JButton quitterButton = new JButton("Quitter");
+		quitterButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onQuitterClicked();
+				
+			}
+		});
 		panelSouth.add(quitterButton);
 		
 		JPanel panelCenter = new JPanel();
@@ -63,15 +113,15 @@ public class UITask extends JFrame {
 		panelCenter.add(panelDescription);
 		panelDescription.setLayout(new BorderLayout(0, 0));
 		
-		JLabel labelDescription = new JLabel("Description :");
+		JLabel labelDescription = new JLabel("Description :"); 	
 		labelDescription.setForeground(new Color(255, 255, 255));
 		panelDescription.add(labelDescription, BorderLayout.WEST);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		panelDescription.add(scrollPane, BorderLayout.CENTER);
 		
-		JTextArea textArea = new JTextArea();
-		scrollPane.setViewportView(textArea);
+		 descriptionTA = new JTextArea();
+		scrollPane.setViewportView(descriptionTA);
 		
 		JPanel panelDateEcheance = new JPanel();
 		panelDateEcheance.setBackground(new Color(0, 115, 165));
@@ -83,9 +133,16 @@ public class UITask extends JFrame {
 		labelDateEcheance.setForeground(new Color(255, 255, 255));
 		panelDateEcheance.add(labelDateEcheance);
 		
-		JFormattedTextField dateEcheanceTF = new JFormattedTextField();
-		dateEcheanceTF.setColumns(10);
-		panelDateEcheance.add(dateEcheanceTF);
+		try {
+			MaskFormatter maskFormater = new MaskFormatter("####-##-##"); 
+			dateEcheanceTF = new JFormattedTextField(maskFormater);
+			dateEcheanceTF.setToolTipText("yyyy-mm-dd");
+			dateEcheanceTF.setColumns(10);
+			panelDateEcheance.add(dateEcheanceTF);
+			
+		} catch (ParseException ignored) {}
+		
+		
 		
 		JPanel panelCriticite = new JPanel();
 		panelCriticite.setBackground(new Color(0, 115, 165));
@@ -97,15 +154,50 @@ public class UITask extends JFrame {
 		criticiteLabel.setForeground(new Color(255, 255, 255));
 		panelCriticite.add(criticiteLabel);
 		
-		JComboBox <String> comboBox = new JComboBox<>();
-		comboBox.setModel(new DefaultComboBoxModel<>(new String[] {"Faible", "Normal", "Urgent"}));
-		comboBox.setPreferredSize(new Dimension(85, 22));
-		comboBox.setOpaque(false);
-		comboBox.setSize(new Dimension(0, 22));
-		panelCriticite.add(comboBox);
+		criticiteCB = new JComboBox<>();
+		criticiteCB.setModel(new DefaultComboBoxModel<>(new String[] 
+				{
+						Criticite.FAIBLE.getName(),
+						Criticite.NORMAL.getName(), 
+						Criticite.URGENT.getName()
+				}));
+		criticiteCB.setPreferredSize(new Dimension(85, 22));
+		criticiteCB.setOpaque(false);
+		criticiteCB.setSize(new Dimension(0, 22));
+		panelCriticite.add(criticiteCB);
+		
+		Utilitaire.setLookAndFeel(this);
+		Utilitaire.center(this, getSize());
 	}
 
-	private static final long serialVersionUID = 1L;
-	private JButton validerButton;
+	
+	
+	protected void onValiderClicked() {
+		String description = this.descriptionTA.getText();
+		if (description.isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Veuillez renseigner la description", "Invalid input", JOptionPane.ERROR_MESSAGE);
+		} else {
+			try {
+				LocalDate dateEcheance = LocalDate.parse(this.dateEcheanceTF.getText());
+				Criticite criticite = Criticite.valueOf(this.criticiteCB.getSelectedItem().toString());
+				
+			} catch (DateTimeException e) {
+				JOptionPane.showMessageDialog(null, "Date écheance invalide", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+				
+			}
+		}
+				
+	}
+
+	protected void onQuitterClicked() {
+		this.dispose();
+		
+		uiList.start();
+	}
+
+	public void start() {
+		this.setVisible(true);
+		
+	}
 
 }
