@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
 
+
 import sn.swing.entities.Task;
 import sn.swing.models.TaskModel;
 import sn.swing.service.IService;
@@ -135,18 +136,18 @@ public class UIList extends JFrame {
 	}
 
 
+	
 	protected void onModifierClicked() {
-		int row = tableTasks.getSelectedRow();
-		if (row < 0 ) {
-			JOptionPane.showMessageDialog(null,
-					"Veuillez sélectionner une tâche à supprimer");
+		int row = table.getSelectedRow();
+		if (row < 0) {
+			JOptionPane.showMessageDialog(null,"Veuillez selection une tache");
 		}else {
 			Task task = (Task)businessLayer.getModel().getValueAt(row, TaskModel.OBJECT_COL);
-			UITask uitask = new UITask(this, businessLayer,task);
-			uitask.start();
+			
+			UITask uiTask = new UITask(this, businessLayer,task );
+			uiTask.start();
 			
 			this.end();
-			
 		}
 		
 	}
