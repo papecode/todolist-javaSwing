@@ -134,7 +134,7 @@ public class UILogin extends JFrame{
 		
 		if (status == true) {
 			// Afficher la fenêtre des tâches
-			UIList uilist = new UIList();
+			UIList uilist = new UIList(businessLayer);
 			uilist.start();
 			
 			dispose();

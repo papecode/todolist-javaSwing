@@ -17,8 +17,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
 
+import sn.swing.entities.Task;
+import sn.swing.models.TaskModel;
+import sn.swing.service.IService;
 import sn.swing.utils.Utilitaire;
 import javax.swing.border.EtchedBorder;
 
@@ -27,8 +29,10 @@ public class UIList extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTable tableTasks;
 	private JTable table;
-	public UIList() {
-		
+	private IService businessLayer;
+	
+	public UIList(IService businessLayer) {
+		this.businessLayer = businessLayer;
 		iniCompenents();
 	}
 	
@@ -106,23 +110,11 @@ public class UIList extends JFrame {
 		panelCenter.add(scrollPane, BorderLayout.CENTER);
 		
 		table = new JTable();
-		table.setModel(new DefaultTableModel(
-			new Object[][] {
-			},
-			new String[] {
-				"R\u00E9f\u00E9rence", "Description", "Date Ech\u00E9ance", "Criticit\u00E9"
-			}
-		));
+		table.setModel(businessLayer.getModel());
 		scrollPane.setViewportView(table);
 		
 		tableTasks = new JTable();
-		tableTasks.setModel(new DefaultTableModel (
-				new Object[][] {
-				},
-				new String[] {
-						"R\u00E9f\u00E9rence", "Description", "Date \u00E9ch\u009ance", "Criticit\u00E9"
-				}
-				));
+		tableTasks.setModel(businessLayer.getModel());
 		
 		tableTasks.getColumnModel().getColumn(0).setPreferredWidth(61);
 		tableTasks.getColumnModel().getColumn(1).setPreferredWidth(334);
@@ -144,14 +136,25 @@ public class UIList extends JFrame {
 
 
 	protected void onModifierClicked() {
-		
+		int row = tableTasks.getSelectedRow();
+		if (row < 0 ) {
+			JOptionPane.showMessageDialog(null,
+					"Veuillez sélectionner une tâche à supprimer");
+		}else {
+			Task task = (Task)businessLayer.getModel().getValueAt(row, TaskModel.OBJECT_COL);
+			UITask uitask = new UITask(this, businessLayer,task);
+			uitask.start();
+			
+			this.end();
+			
+		}
 		
 	}
 
 
 	protected void onAjouterClicked() {
 		
-		UITask uitask = new UITask(this);
+		UITask uitask = new UITask(this, businessLayer);
 		uitask.start();
 		
 		this.end();
@@ -175,6 +178,8 @@ public class UIList extends JFrame {
 
 
 	public void start() {
+		if(businessLayer.getAllTaskSize() > 0)
+			this.table.setRowSelectionInterval(0, 0);
 		this.setVisible(true);
 		
 	}

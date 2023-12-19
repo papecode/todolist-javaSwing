@@ -27,6 +27,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.MaskFormatter;
 
 import sn.swing.entities.Criticite;
+import sn.swing.entities.Task;
+import sn.swing.service.CrudOperationExeception;
+import sn.swing.service.IService;
 import sn.swing.utils.Utilitaire;
 
 import javax.swing.border.EtchedBorder;
@@ -34,22 +37,40 @@ import javax.swing.border.EtchedBorder;
 public class UITask extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private UIList uiList;
-	private JButton validerButton;
 	private JTextArea descriptionTA;
 	private JComboBox<String > criticiteCB;
 	private JFormattedTextField dateEcheanceTF;
+	private IService businessLayer;
+	private Task task;
+	private boolean update = false;
 	
-	public UITask(UIList uiList) {
+	public UITask(UIList uiList, IService businessLayer) {
 			this();
-			
+			//- Lui c'est pour l'ajout.
 			this.uiList = uiList;
+			this.businessLayer = businessLayer;
 		}
 	
 	public UITask() {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		iniComponents();
 	}
-	
+		
+	public UITask(UIList uiList, IService businessLayer, Task task) {
+		this(uiList, businessLayer);
+		//- Ce contructeur lorqu'il est invoqué, peut dire que c'est une mise à jour
+		this.update = true;
+		this.task = task;
+		populate();
+	}
+
+	private void populate() {
+		this.descriptionTA.setText(task.getDescription());
+		this.dateEcheanceTF.setText(task.getDateEcheance().toString());
+		this.criticiteCB.setSelectedItem(task.getCriticite().getName());
+		
+	}
+
 	private void iniComponents () {
 		setTitle("Gestion des tâches - version 1.0.2");
 		setResizable(false);
@@ -121,6 +142,7 @@ public class UITask extends JFrame {
 		panelDescription.add(scrollPane, BorderLayout.CENTER);
 		
 		 descriptionTA = new JTextArea();
+		 descriptionTA.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		scrollPane.setViewportView(descriptionTA);
 		
 		JPanel panelDateEcheance = new JPanel();
@@ -173,20 +195,83 @@ public class UITask extends JFrame {
 	
 	
 	protected void onValiderClicked() {
+		if (isUpdate()) {
+			onModifier();
+		} else {
+			onAjouter();
+		}
+		
+	}
+
+	private boolean isUpdate() {
+		return update;
+	}
+
+	protected void onAjouter() {
 		String description = this.descriptionTA.getText();
 		if (description.isEmpty()) {
 			JOptionPane.showMessageDialog(null, "Veuillez renseigner la description", "Invalid input", JOptionPane.ERROR_MESSAGE);
 		} else {
 			try {
 				LocalDate dateEcheance = LocalDate.parse(this.dateEcheanceTF.getText());
-				Criticite criticite = Criticite.valueOf(this.criticiteCB.getSelectedItem().toString());
+				Criticite criticite = Criticite.valueOf(this.criticiteCB.getSelectedItem().toString().toUpperCase());
+				
+				Task task = new Task(description, dateEcheance, criticite);
+				businessLayer.addtask(task);
+				
+				clear();
+				JOptionPane.showMessageDialog(null, "Nouvelle tâche ajoutée",
+						"Ajout d'une tâche", 
+						JOptionPane.INFORMATION_MESSAGE);
 				
 			} catch (DateTimeException e) {
-				JOptionPane.showMessageDialog(null, "Date écheance invalide", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null,
+						"Date écheance invalide", "Invalid Input", JOptionPane.ERROR_MESSAGE);
 				
+			} catch ( IllegalArgumentException | CrudOperationExeception e1  ) {
+				JOptionPane.showMessageDialog(null,
+						e1.getMessage(), "Operation Performing Error", JOptionPane.ERROR_MESSAGE);
+
 			}
 		}
 				
+	}
+
+	protected void onModifier() {
+		String description = this.descriptionTA.getText();
+		if (description.isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Veuillez renseigner la description", "Invalid input", JOptionPane.ERROR_MESSAGE);
+		} else {
+			try {
+				LocalDate dateEcheance = LocalDate.parse(this.dateEcheanceTF.getText());
+				Criticite criticite = Criticite.valueOf(this.criticiteCB.getSelectedItem().toString().toUpperCase());
+				
+				Task task = new Task(this.task.getReference(), description, dateEcheance, criticite);
+				businessLayer.modifytask(task);
+				
+				clear();
+				JOptionPane.showMessageDialog(null, "Tâche modifiée",
+						"Modification d'une tâche", 
+						JOptionPane.INFORMATION_MESSAGE);
+				
+			} catch (DateTimeException e) {
+				JOptionPane.showMessageDialog(null,
+						"Date écheance invalide", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+				
+			} catch ( IllegalArgumentException | CrudOperationExeception e1  ) {
+				JOptionPane.showMessageDialog(null,
+						e1.getMessage(), "Operation Performing Error", JOptionPane.ERROR_MESSAGE);
+
+			}
+		}
+				
+	}
+	
+	private void clear() {
+		this.descriptionTA.setText(null);
+		this.dateEcheanceTF.setText(null);
+		this.criticiteCB.setSelectedIndex(0);
+		
 	}
 
 	protected void onQuitterClicked() {

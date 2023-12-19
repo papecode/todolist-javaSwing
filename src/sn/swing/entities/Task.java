@@ -59,6 +59,15 @@ public class Task {
 		this.criticite = criticite;
 	} 
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Task) {
+			return this.reference == ((Task)obj).reference;
+		} else {
+			return false;
+		}
+	}
+	
 	
 	
 	
